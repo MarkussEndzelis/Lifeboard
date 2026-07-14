@@ -4,9 +4,9 @@ import com.lifeboard.db.Database;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
+
 import javafx.stage.Stage;
+import com.lifeboard.ui.MainLayout;;
 
 public class Main extends Application{
     
@@ -14,10 +14,9 @@ public class Main extends Application{
     public void start(Stage primaryStage){
         Database.initialize();
 
-        StackPane root = new StackPane();
-        root.getChildren().add(new Label("LifeBoard is running!"));
+        MainLayout layout = new MainLayout();
 
-        Scene scene = new Scene(root, 1000, 650);
+        Scene scene = new Scene(layout, 1000, 650);
         primaryStage.setTitle("LifeBoard");
         primaryStage.setScene(scene);
         primaryStage.show();
