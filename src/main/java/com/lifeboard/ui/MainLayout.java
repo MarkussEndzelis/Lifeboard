@@ -44,7 +44,7 @@ public class MainLayout extends BorderPane{
         dashboardBtn.setOnAction(e -> showView(new Label("Dashboard coming soon"), dashboardBtn));
         tasksBtn.setOnAction(e -> showView(new TasksView(), tasksBtn));
         habitsBtn.setOnAction(e -> showView(new HabitsView(), habitsBtn));
-        budgetBtn.setOnAction(e -> showView(new Label("Budget coming soon"), budgetBtn));
+        budgetBtn.setOnAction(e -> showView(new BudgetView(), budgetBtn));
 
         sidebar.getChildren().addAll(title, dashboardBtn, tasksBtn, habitsBtn, budgetBtn);
         return sidebar;
