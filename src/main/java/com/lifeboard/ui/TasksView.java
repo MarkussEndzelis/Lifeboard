@@ -17,6 +17,7 @@ public class TasksView extends VBox {
     
     private final TaskDAO taskDAO = new TaskDAO();
     private final VBox taskListBox = new VBox(8);
+    private int editingTaskId = -1;
 
     private final TextField titleField = new TextField();
     private final TextField categoryField = new TextField();
@@ -105,7 +106,11 @@ public class TasksView extends VBox {
         }
 
         for (Task task : tasks){
-            taskListBox.getChildren().add(buildTaskRow(task));
+            if (task.getId() == editingTaskId){
+                taskListBox.getChildren().add(buildEditRow(task));
+            }else{
+                taskListBox.getChildren().add(buildTaskRow(task));
+            }
         }
     }
 
@@ -128,6 +133,13 @@ public class TasksView extends VBox {
         Label dueLabel = new Label(task.getDueDate() != null ? "Due " + task.getDueDate() : "");
         dueLabel.getStyleClass().add("text-muted");
 
+        Button editBtn = new Button("Edit");
+        editBtn.getStyleClass().add("button-secondary");
+        editBtn.setOnAction(e -> {
+            editingTaskId = task.getId();
+            refresh();
+        });
+
         Button deleteBtn = new Button("X");
         deleteBtn.getStyleClass().add("button-icon");
         deleteBtn.setOnAction(e -> {
@@ -138,7 +150,54 @@ public class TasksView extends VBox {
         HBox spacer = new HBox();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        HBox row = new HBox(10, checkBox, titleLabel, priorityLabel, categoryLabel, spacer, dueLabel, deleteBtn);
+        HBox row = new HBox(10, checkBox, titleLabel, priorityLabel, categoryLabel, spacer, dueLabel, editBtn, deleteBtn);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setPadding(new Insets(10, 14, 10, 14));
+        row.getStyleClass().add("row-card");
+        return row;
+    }
+
+    private HBox buildEditRow(Task task){
+        TextField editTitle = new TextField(task.getTitle());
+        editTitle.setPrefWidth(180);
+
+        TextField editCategory = new TextField(task.getCategory() != null ? task.getCategory() : "");
+        editCategory.setPromptText("Category");
+        editCategory.setPrefWidth(120);
+
+        ComboBox<String> editPriority = new ComboBox<>();
+        editPriority.getItems().addAll("High", "Medium", "Low");
+        editPriority.setValue(task.getPriorityLabel());
+
+        DatePicker editDate = new DatePicker();
+        if (task.getDueDate() != null){
+            editDate.setValue(LocalDate.parse(task.getDueDate()));
+        }
+
+        Button saveBtn = new Button("Save");
+        saveBtn.getStyleClass().add("button-primary");
+        saveBtn.setOnAction(e -> {
+            String newTitle = editTitle.getText().trim();
+            if(newTitle.isEmpty()){
+                return;
+            }
+            String newCategory = editCategory.getText().trim();
+            int newPriority = priorityLabelToInt(editPriority.getValue());
+            String newDueDate = editDate.getValue() != null ? editDate.getValue().toString() : null;
+
+            taskDAO.update(task.getId(), newTitle, newCategory.isEmpty() ? null : newCategory, newPriority, newDueDate);
+            editingTaskId = -1;
+            refresh();
+        });
+
+        Button cancelBtn = new Button("Cancel");
+        cancelBtn.getStyleClass().add("button-secondary");
+        cancelBtn.setOnAction(e -> {
+            editingTaskId = -1;
+            refresh();
+        });
+
+        HBox row = new HBox(8, editTitle, editCategory, editPriority, editDate, saveBtn, cancelBtn);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setPadding(new Insets(10, 14, 10, 14));
         row.getStyleClass().add("row-card");
