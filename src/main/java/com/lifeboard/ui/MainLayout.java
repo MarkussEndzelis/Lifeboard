@@ -23,7 +23,7 @@ public class MainLayout extends BorderPane{
         VBox.setVgrow(contentArea, Priority.ALWAYS);
         setCenter(contentArea);
 
-        showView(new TasksView(), findButtonByText(sidebar, "Tasks"));
+        showView(new DashboardView(), findButtonByText(sidebar, "Dashboard"));
     }
 
     private VBox buildSidebar(){
@@ -41,7 +41,7 @@ public class MainLayout extends BorderPane{
         Button habitsBtn = navButton("Habits");
         Button budgetBtn = navButton("Budget");
 
-        dashboardBtn.setOnAction(e -> showView(new Label("Dashboard coming soon"), dashboardBtn));
+        dashboardBtn.setOnAction(e -> showView(new DashboardView(), dashboardBtn));
         tasksBtn.setOnAction(e -> showView(new TasksView(), tasksBtn));
         habitsBtn.setOnAction(e -> showView(new HabitsView(), habitsBtn));
         budgetBtn.setOnAction(e -> showView(new BudgetView(), budgetBtn));
