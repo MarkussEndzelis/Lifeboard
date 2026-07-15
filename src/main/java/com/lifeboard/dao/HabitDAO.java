@@ -20,8 +20,8 @@ public class HabitDAO {
         List<Habit> habits = new ArrayList<>();
         String sql = "SELECT * FROM habits ORDER BY created_at ASC";
 
-        try(Connection  conn = Database.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql);
+        Connection conn = Database.getConnection();
+        try (PreparedStatement stmt = conn.prepareStatement(sql);
                 ResultSet rs = stmt.executeQuery()){
                     while(rs.next()){
                         habits.add(new Habit(rs.getInt("id"), rs.getString("name"), rs.getString("created_at")));
@@ -35,8 +35,8 @@ public class HabitDAO {
     public void insert(String name){
         String sql = "INSERT INTO habits (name, created_at) VALUES (?, ?)";
 
-        try (Connection conn = Database.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)){
+        Connection conn = Database.getConnection();
+        try (PreparedStatement stmt = conn.prepareStatement(sql)){
                     stmt.setString(1, name);
                     stmt.setString(2, LocalDateTime.now().toString());
                     stmt.executeUpdate();
@@ -48,8 +48,8 @@ public class HabitDAO {
     public void delete(int habitId){
         String sql = "DELETE FROM habits WHERE id = ?";
 
-        try(Connection conn = Database.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)){
+        Connection conn = Database.getConnection();
+        try (PreparedStatement stmt = conn.prepareStatement(sql)){
                     stmt.setInt(1, habitId);
                     stmt.executeUpdate();
         }catch(SQLException e){
@@ -60,8 +60,8 @@ public class HabitDAO {
     public boolean isLoggedOn(int habitId, LocalDate date){
         String sql = "SELECT 1 FROM habit_logs WHERE habit_id = ? AND log_date = ?";
 
-        try(Connection conn = Database.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)){
+        Connection conn = Database.getConnection();
+        try (PreparedStatement stmt = conn.prepareStatement(sql)){
                     stmt.setInt(1, habitId);
                     stmt.setString(2, date.toString());
                     try(ResultSet rs = stmt.executeQuery()){
@@ -76,8 +76,8 @@ public class HabitDAO {
     public void logDate(int habitId, LocalDate date){
         String sql = "INSERT OR IGNORE INTO habit_logs (habit_id, log_date) VALUES (?, ?)";
     
-        try (Connection conn = Database.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)){
+        Connection conn = Database.getConnection();
+        try (PreparedStatement stmt = conn.prepareStatement(sql)){
                     stmt.setInt(1, habitId);
                     stmt.setString(2, date.toString());
                     stmt.executeUpdate();
@@ -89,8 +89,8 @@ public class HabitDAO {
     public void unlogDate(int habitId, LocalDate date){
         String sql = "DELETE FROM habit_logs WHERE habit_id = ? AND log_date = ?";
 
-        try (Connection conn = Database.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)){
+        Connection conn = Database.getConnection();
+        try (PreparedStatement stmt = conn.prepareStatement(sql)){
                     stmt.setInt(1, habitId);
                     stmt.setString(2, date.toString());
                     stmt.executeUpdate();
@@ -103,8 +103,8 @@ public class HabitDAO {
         Set<LocalDate> dates = new HashSet<>();
         String sql = "SELECT log_date FROM habit_logs WHERE habit_id = ? AND log_date BETWEEN ? AND ?";
 
-        try (Connection conn = Database.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)){
+        Connection conn = Database.getConnection();
+        try (PreparedStatement stmt = conn.prepareStatement(sql)){
                     stmt.setInt(1, habitId);
                     stmt.setString(2, from.toString());
                     stmt.setString(3, to.toString());
