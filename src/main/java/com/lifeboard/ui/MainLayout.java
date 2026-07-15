@@ -18,8 +18,9 @@ public class MainLayout extends BorderPane{
         VBox sidebar = buildSidebar();
         setLeft(sidebar);
 
-        contentArea.setPadding(new Insets(24));
-        contentArea.setStyle("-fx-background-color: #f4f5f7;");
+        contentArea.setPadding(new Insets(28));
+        contentArea.setSpacing(20);
+        contentArea.getStyleClass().add("content-area");
         VBox.setVgrow(contentArea, Priority.ALWAYS);
         setCenter(contentArea);
 
@@ -28,13 +29,13 @@ public class MainLayout extends BorderPane{
 
     private VBox buildSidebar(){
         VBox sidebar = new VBox(4);
-        sidebar.setPadding(new Insets(20, 12, 20, 12));
-        sidebar.setPrefWidth(180);
-        sidebar.setStyle("-fx-background-color: #1e2130");
+        sidebar.setPadding(new Insets(24, 12, 20, 12));
+        sidebar.setPrefWidth(190);
+        sidebar.getStyleClass().add("sidebar");
 
         Label title = new Label("LifeBoard");
-        title.setStyle("-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;");
-        title.setPadding(new Insets(0, 0, 20, 8));
+        title.getStyleClass().add("sidebar-title");
+        title.setPadding(new Insets(0, 0, 24, 8));
 
         Button dashboardBtn = navButton("Dashboard");
         Button tasksBtn = navButton("Tasks");
@@ -52,25 +53,21 @@ public class MainLayout extends BorderPane{
 
     private Button navButton(String text){
         Button btn = new Button(text);
-        btn.setPrefWidth(156);
+        btn.setPrefWidth(166);
         btn.setAlignment(Pos.CENTER_LEFT);
         btn.setPadding(new Insets(10, 12, 10, 12));
+        btn.getStyleClass().add("nav-button");
         return btn;
-    }
-
-    private String inactiveStyle(){
-        return "-fx-background-color: transparent; -fx-text-fill: #c5c8d3; -fx-font-size: 14px; -fx-background-radius: 8;";
-    }
-    private String activeStyle(){
-        return "-fx-background-color: #2ed573; -fx-text-fill: #0f0f1a; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 8;";
     }
 
     private void showView(javafx.scene.Node view, Button clicked){
         if (activeButton != null){
-            activeButton.setStyle(inactiveStyle());
+            activeButton.getStyleClass().remove("nav-button-active");
+            activeButton.getStyleClass().add("nav-button");
         }
         if (clicked != null){
-            clicked.setStyle(activeStyle());
+            clicked.getStyleClass().remove("nav-button");
+            clicked.getStyleClass().add("nav-button-active");
             activeButton = clicked;
         }
         contentArea.getChildren().setAll(view);

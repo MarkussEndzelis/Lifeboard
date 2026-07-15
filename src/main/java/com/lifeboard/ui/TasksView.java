@@ -27,7 +27,7 @@ public class TasksView extends VBox {
         setSpacing(16);
 
         Label header = new Label("Tasks");
-        header.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; ");
+        header.getStyleClass().add("page-number");
 
         VBox form = buildForm();
 
@@ -53,7 +53,7 @@ public class TasksView extends VBox {
         dueDatePicker.setPromptText("Due date");
 
         Button addBtn = new Button("Add Task");
-        addBtn.setStyle("-fx-background-color: #2ed573; -fx-text-fill: #0f0f1a; -fx-font-weight: bold; -fx-background-radius: 6;");
+        addBtn.getStyleClass().add("button-primary");
         addBtn.setOnAction(e -> addTask());
 
         HBox row = new HBox(8, titleField, categoryField, priorityBox, dueDatePicker, addBtn);
@@ -61,7 +61,7 @@ public class TasksView extends VBox {
 
         VBox form = new VBox(row);
         form.setPadding(new Insets(12));
-        form.setStyle("-fx-background-color: white; -fx-background-radius: 10;");
+        form.getStyleClass().add("card");
         return form;
     }
 
@@ -99,7 +99,7 @@ public class TasksView extends VBox {
 
         if (tasks.isEmpty()){
             Label empty = new Label("No tasks yet - add one above!");
-            empty.setStyle("-fx-text-fill: #999;");
+            empty.getStyleClass().add("text-muted");
             taskListBox.getChildren().add(empty);
             return;
         }
@@ -118,19 +118,18 @@ public class TasksView extends VBox {
         });
 
         Label titleLabel = new Label(task.getTitle());
-        titleLabel.setStyle(task.isCompleted()
-            ? "-fx-strikethrough: true; -fx-text-fill: #999; -fx-font-size: 14px;" : "-fx-font-size: 14px;");
+        titleLabel.getStyleClass().add(task.isCompleted() ? "text-strikethrough" : "text-primary");
         Label priorityLabel = new Label(task.getPriorityLabel());
         priorityLabel.setStyle("-fx-font-size: 11px; -fx-padding: 2 8; -fx-background-radius: 10; "  + priorityColor(task.getPriority()));
 
         Label categoryLabel = new Label(task.getCategory() != null ? task.getCategory() : "");
-        categoryLabel.setStyle("-fx-text-fill: #888; -fx-font-size: 11px;");
+        categoryLabel.getStyleClass().add("text-muted");
         
         Label dueLabel = new Label(task.getDueDate() != null ? "Due " + task.getDueDate() : "");
-        dueLabel.setStyle("-fx-text-fill: #888; -fx-font-size: 11px;");
+        dueLabel.getStyleClass().add("text-muted");
 
         Button deleteBtn = new Button("X");
-        deleteBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #ff4757; -fx-font-weight: bold;");
+        deleteBtn.getStyleClass().add("button-icon");
         deleteBtn.setOnAction(e -> {
             taskDAO.delete(task.getId());
             refresh();
@@ -142,7 +141,7 @@ public class TasksView extends VBox {
         HBox row = new HBox(10, checkBox, titleLabel, priorityLabel, categoryLabel, spacer, dueLabel, deleteBtn);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setPadding(new Insets(10, 14, 10, 14));
-        row.setStyle("-fx-background-color: white; -fx-background-radius: 8;");
+        row.getStyleClass().add("row-card");
         return row;
     }
 

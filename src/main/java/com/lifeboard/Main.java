@@ -17,6 +17,7 @@ public class Main extends Application{
         MainLayout layout = new MainLayout();
 
         Scene scene = new Scene(layout, 1000, 650);
+        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
         primaryStage.setTitle("LifeBoard");
         primaryStage.setScene(scene);
         primaryStage.show();

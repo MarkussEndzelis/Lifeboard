@@ -30,10 +30,10 @@ public class BudgetView extends VBox{
         setSpacing(16);
 
         Label header = new Label("Budget");
-        header.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
+        header.getStyleClass().add("page-header");
 
         summaryBox.setPadding(new Insets(16));
-        summaryBox.setStyle("-fx-background-color: white; -fx-background-radius: 10;");
+        summaryBox.getStyleClass().add("card");
 
         VBox form = buildForm();
 
@@ -62,7 +62,7 @@ public class BudgetView extends VBox{
         datePicker.setValue(LocalDate.now());
 
         Button addBtn = new Button("Add Transaction");
-        addBtn.setStyle("-fx-background-color: #ffd700; -fx-text-fill: #0f0f1a; -fx-font-weight: bold; -fx-background-radius: 6;");
+        addBtn.getStyleClass().add("button-primary");
         addBtn.setOnAction(e -> addTransaction());
 
         HBox row = new HBox(8, descField, amountField, categoryField, typeBox, datePicker, addBtn);
@@ -70,7 +70,7 @@ public class BudgetView extends VBox{
 
         VBox form = new VBox(row);
         form.setPadding(new Insets(12));
-        form.setStyle("-fx-background-color: white; -fx-background-radius: 10;");
+        form.getStyleClass().add("card");
         return form;
     }
 
@@ -118,28 +118,29 @@ public class BudgetView extends VBox{
         double allTimeBalance = transactionDAO.getAllTimeBalance();
 
         Label balanceLabel = new Label(formatMoney(allTimeBalance));
-        balanceLabel.setStyle("-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: "
-                + (allTimeBalance >= 0 ? "#2ed573" : "#ff4757") + ";");
+        balanceLabel.setStyle("-fx-font-size: 32px; -fx-font-weight: bold;");
+        balanceLabel.getStyleClass().add(allTimeBalance >= 0 ? "success-text" : "danger-text");
 
         Label balanceCaption = new Label("Total balance");
-        balanceCaption.setStyle("-fx-text-fill: #888; -fx-font-size: 12px;");
+        balanceCaption.getStyleClass().add("text-muted");
 
         HBox monthRow = new HBox(24);
         monthRow.setAlignment(Pos.CENTER_LEFT);
         monthRow.setPadding(new Insets(8, 0, 0, 0));
 
-        VBox incomeBox = new VBox(2, labeled("This month income", formatMoney(monthIncome), "#2ed573"));
-        VBox expenseBox = new VBox(2, labeled("This month expenses", formatMoney(monthExpense), "#ff4757"));
+        VBox incomeBox = new VBox(2, labeled("This month income", formatMoney(monthIncome), "success-text"));
+        VBox expenseBox = new VBox(2, labeled("This month expenses", formatMoney(monthExpense), "danger-text"));
 
         monthRow.getChildren().addAll(incomeBox, expenseBox);
         summaryBox.getChildren().addAll(balanceCaption, balanceLabel, monthRow);
     }
 
-    private VBox labeled(String caption, String value, String color){
+    private VBox labeled(String caption, String value, String styleClass){
         Label captionLabel = new Label(caption);
-        captionLabel.setStyle("-fx-text-fill: #888; -fx-font-size: 11px;");
+        captionLabel.getStyleClass().add("text-muted");
         Label valueLabel = new Label(value);
-        valueLabel.setStyle("-fx-text-fill: " + color + "; -fx-font-size: 16px; -fx-font-weight: bold;");
+        valueLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        valueLabel.getStyleClass().add(styleClass);
         return new VBox(2, captionLabel, valueLabel);
     }
 
@@ -149,7 +150,7 @@ public class BudgetView extends VBox{
 
         if (transactions.isEmpty()){
             Label empty = new Label("No transactions yet - add one above!");
-            empty.setStyle("-fx-text-fill: #999;");
+            empty.getStyleClass().add("text-muted");
             transactionListBox.getChildren().add(empty);
             return;
         }
@@ -161,20 +162,21 @@ public class BudgetView extends VBox{
 
     private HBox buildTransactionRow(Transaction t){
         Label descLabel = new Label(t.getDescription());
-        descLabel.setStyle("-fx-font-size: 14px;");
+        descLabel.getStyleClass().add("text-primary");
 
         Label categoryLabel = new Label(t.getCategory() != null ? t.getCategory() : "");
-        categoryLabel.setStyle("-fx-text-fill: #888; -fx-font-size: 11px;");
+        categoryLabel.getStyleClass().add("text-muted");
 
         Label dateLabel = new Label(t.getTransactionDate());
-        dateLabel.setStyle("-fx-text-fill: #888; -fx-font-size: 11px;");
+        dateLabel.getStyleClass().add("text-muted");
 
         String sign = t.isIncome() ? "+" : "-";
         Label amountLabel = new Label(sign + formatMoney(t.getAmount()));
-        amountLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: " + (t.isIncome() ? "#2ed573" : "#ff4757") + ";");
+        amountLabel.setStyle("-fx-font-weight: bold;");
+        amountLabel.getStyleClass().add(t.isIncome() ? "success-text" : "danger-text");
 
         Button deleteBtn = new Button("X");
-        deleteBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #ff4757; -fx-font-weight: bold;");
+        deleteBtn.getStyleClass().add("button-icon");
         deleteBtn.setOnAction(e -> {
             transactionDAO.delete(t.getId());
             refresh();
@@ -186,7 +188,7 @@ public class BudgetView extends VBox{
         HBox row = new HBox(10, descLabel, categoryLabel, spacer, dateLabel, amountLabel, deleteBtn);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setPadding(new Insets(10, 14, 10, 14));
-        row.setStyle("-fx-background-color: white; -fx-background-radius: 8;");
+        row.getStyleClass().add("row-card");
         return row;
     }
 

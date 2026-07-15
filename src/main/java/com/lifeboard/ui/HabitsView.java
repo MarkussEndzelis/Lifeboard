@@ -29,7 +29,7 @@ public class HabitsView extends VBox{
         setSpacing(16);
 
         Label header = new Label("Habits");
-        header.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
+        header.getStyleClass().add("page-header");
 
         HBox form = buildForm();
 
@@ -47,13 +47,13 @@ public class HabitsView extends VBox{
         nameField.setPrefWidth(260);
 
         Button addBtn = new Button("Add Habit");
-        addBtn.setStyle("-fx-background-color: #00cfff; -fx-text-fill: #0f0f1a; -fx-font-weight: bold; -fx-background-radius: 6;");
+        addBtn.getStyleClass().add("button-primary");
         addBtn.setOnAction(e -> addHabit());
 
         HBox row = new HBox(8, nameField, addBtn);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setPadding(new Insets(12));
-        row.setStyle("-fx-background-color: white; -fx-background-radius: 10;");
+        row.getStyleClass().add("card");
         return row;
     }
 
@@ -73,7 +73,7 @@ public class HabitsView extends VBox{
 
         if(habits.isEmpty()){
             Label empty = new Label("No habits yet - add one above!");
-            empty.setStyle("-fx-text-fill: #999;");
+            empty.getStyleClass().add("text-muted");
             habitListBox.getChildren().add(empty);
             return;
         }
@@ -89,13 +89,14 @@ public class HabitsView extends VBox{
         int streak = habitDAO.getStreak(habit.getId());
 
         Label nameLabel = new Label(habit.getName());
-        nameLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        nameLabel.getStyleClass().add("card-title");
 
         Label streakLabel = new Label(streak > 0 ? "🔥 " + streak + " day streak" : "No streak yet");
-        streakLabel.setStyle(streak > 0 ? "-fx-text-fill: #ff6b35; -fx-font-size: 12px;" : "-fx-text-fill: #999; -fx-font-size: 12px;");
+        streakLabel.getStyleClass().add(streak > 0 ? "accent-text" : "text-muted");
+        streakLabel.setStyle("-fx-font-size: 12px;");
 
         Button todayBtn = new Button(doneToday ? "✓ Done today" : "Mark done today");
-        todayBtn.setStyle(doneToday ? "-fx-background-color: #2ed573; -fx-text-fill: #0f0f1a; -fx-font-weight: bold; -fx-background-radius: 6;" : "-fx-background-color: #e8e8ee; -fx-text-fill: #333; -fx-background-radius: 6;");
+        todayBtn.getStyleClass().add(doneToday ? "button-primary" : "button-secondary");
         todayBtn.setOnAction(e -> {
             if (habitDAO.isLoggedOn(habit.getId(), today)){
                 habitDAO.unlogDate(habit.getId(), today);
@@ -106,7 +107,7 @@ public class HabitsView extends VBox{
         });
 
         Button deleteBtn = new Button("X");
-        deleteBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #ff4757; -fx-font-weight: bold;");
+        deleteBtn.getStyleClass().add("button-icon");
         deleteBtn.setOnAction(e -> {
             habitDAO.delete(habit.getId());
             refresh();
@@ -122,7 +123,7 @@ public class HabitsView extends VBox{
 
         VBox card = new VBox(8, topRow, streakLabel, weekGrid);
         card.setPadding(new Insets(14));
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 10;");
+        card.getStyleClass().add("card");
         return card;
     }
 
@@ -145,7 +146,8 @@ public class HabitsView extends VBox{
             dot.setStyle("-fx-background-radius: 10; -fx-background-color: " + (isDone ? "#2ed573" : "#e0e0e6") + ";");
 
             Label dayLabel = new Label(day.getDayOfWeek().getDisplayName(TextStyle.NARROW, Locale.getDefault()));
-            dayLabel.setStyle("-fx-font-size: 9px; -fx-text-fill: #aaa;");
+            dayLabel.getStyleClass().add("text-muted");
+            dayLabel.setStyle("-fx-font-size: 9px;");
 
             dayBox.getChildren().addAll(dot, dayLabel);
             grid.getChildren().add(dayBox);
