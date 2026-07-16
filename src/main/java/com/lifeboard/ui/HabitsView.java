@@ -18,12 +18,16 @@ import java.time.format.TextStyle;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.time.YearMonth;
+import javafx.scene.layout.GridPane;
 
 public class HabitsView extends VBox{
     
     private final HabitDAO habitDAO = new HabitDAO();
     private final VBox habitListBox = new VBox(10);
     private final TextField nameField = new TextField();
+    private int expandedHabitId = -1;
+    private YearMonth calendarMonth = YearMonth.now();
 
     public HabitsView(){
         setSpacing(16);
@@ -113,10 +117,22 @@ public class HabitsView extends VBox{
             refresh();
         });
 
+        Button calendarBtn = new Button(expandedHabitId == habit.getId() ? "Hide Calendar" : "Calendar");
+        calendarBtn.getStyleClass().add("button-secondary");
+        calendarBtn.setOnAction(e -> {
+            if (expandedHabitId == habit.getId()){
+                expandedHabitId = -1;
+            }else {
+                expandedHabitId = habit.getId();
+                calendarMonth = YearMonth.now();
+            }
+            refresh();
+        });
+
         HBox spacer = new HBox();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        HBox topRow = new HBox(10, nameLabel, spacer, todayBtn, deleteBtn);
+        HBox topRow = new HBox(10, nameLabel, spacer, todayBtn, calendarBtn, deleteBtn);
         topRow.setAlignment(Pos.CENTER_LEFT);
 
         HBox weekGrid = buildWeekGrid(habit.getId(), today);
@@ -124,6 +140,10 @@ public class HabitsView extends VBox{
         VBox card = new VBox(8, topRow, streakLabel, weekGrid);
         card.setPadding(new Insets(14));
         card.getStyleClass().add("card");
+        
+        if (expandedHabitId == habit.getId()){
+            card.getChildren().add(buildMonthCalendar(habit.getId()));
+        }
         return card;
     }
 
@@ -153,5 +173,79 @@ public class HabitsView extends VBox{
             grid.getChildren().add(dayBox);
         }
         return grid;
+    }
+
+    private VBox buildMonthCalendar(int habitId){
+        LocalDate monthStart = calendarMonth.atDay(1);
+        LocalDate monthEnd = calendarMonth.atEndOfMonth();
+        Set<LocalDate> logged = habitDAO.getLoggedDatesInRange(habitId, monthStart, monthEnd);
+
+        Button prevBtn = new Button("<-");
+        prevBtn.getStyleClass().add("button-secondary");
+        prevBtn.setOnAction(e -> {
+            calendarMonth = calendarMonth.minusMonths(1);
+            refresh();
+        });
+
+        Button nextBtn = new Button("->");
+        nextBtn.getStyleClass().add("button-secondary");
+        nextBtn.setOnAction(e -> {
+            calendarMonth = calendarMonth.plusMonths(1);
+            refresh();
+        });
+
+        Label monthLabel = new Label(calendarMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()) + " " + calendarMonth.getYear());
+        monthLabel.getStyleClass().add("text-primary");
+
+        HBox spacer1 = new HBox();
+        HBox.setHgrow(spacer1, Priority.ALWAYS);
+        HBox spacer2 = new HBox();
+        HBox.setHgrow(spacer2, Priority.ALWAYS);
+
+        HBox navRow = new HBox(8, prevBtn, spacer1, monthLabel, spacer2, nextBtn);
+        navRow.setAlignment(Pos.CENTER_LEFT);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(6);
+        grid.setVgap(6);
+
+        String[] dayHeaders = {"M", "T", "W", "T", "F", "S", "S"};
+        for (int col = 0; col < 7; col++){
+            Label dayHeader = new Label(dayHeaders[col]);
+            dayHeader.getStyleClass().add("text-muted");
+            dayHeader.setPrefWidth(28);
+            dayHeader.setAlignment(Pos.CENTER);
+            grid.add(dayHeader, col, 0);
+        }
+
+        int daysInMonth = calendarMonth.lengthOfMonth();
+        LocalDate today = LocalDate.now();
+
+        int row = 1;
+        for (int day = 1; day <= daysInMonth; day++){
+            LocalDate date = calendarMonth.atDay(day);
+            int col = date.getDayOfWeek().getValue() - 1;
+
+            boolean isDone = logged.contains(date);
+            boolean isToday = date.equals(today);
+
+            Label cell = new Label(String.valueOf(day));
+            cell.setPrefSize(28, 28);
+            cell.setAlignment(Pos.CENTER);
+            String bg = isDone ? "#2ed573" : "#26262e";
+            String textColor = isDone ? "#16161a" : "#8b8b93";
+            String border = isToday ? "-fx-border-color: #e8a33d; -fx-border-width: 2; -fx-border-radius: 14;" : "";
+            cell.setStyle("-fx-background-color: " + bg + "; -fx-text-fill: " + textColor
+                + "; -fx-background-radius: 14; -fx-font-size: 11px;" + border);
+            
+            grid.add(cell, col, row);
+
+            if (col == 6){
+                row++;
+            }
+        }
+        VBox calendarBox = new VBox(10, navRow, grid);
+        calendarBox.setPadding(new Insets(12, 0, 0,  0));
+        return calendarBox;
     }
 }

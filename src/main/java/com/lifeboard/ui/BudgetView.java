@@ -10,6 +10,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.chart.PieChart;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,6 +21,7 @@ public class BudgetView extends VBox{
     private final TransactionDAO transactionDAO = new TransactionDAO();
     private final VBox transactionListBox = new VBox(8);
     private final VBox summaryBox = new VBox(4);
+    private final VBox chartBox = new VBox(10);
     private final ComboBox<String> filterBox = new ComboBox<>();
     private boolean updatingFilter = false;
 
@@ -38,15 +40,20 @@ public class BudgetView extends VBox{
         summaryBox.setPadding(new Insets(16));
         summaryBox.getStyleClass().add("card");
 
+        chartBox.setPadding(new Insets(16));
+        chartBox.getStyleClass().add("card");
+
         VBox form = buildForm();
         HBox filterRow = buildFilterRow();
 
-        ScrollPane scrollPane = new ScrollPane(transactionListBox);
+        VBox contentBox = new VBox(16, header, summaryBox, chartBox, form, filterRow, transactionListBox);
+
+        ScrollPane scrollPane = new ScrollPane(contentBox);
         scrollPane.setFitToWidth(true);
         scrollPane.setStyle("-fx-background-color: transparent;");
         VBox.setVgrow(scrollPane, Priority.ALWAYS);
 
-        getChildren().addAll(header, summaryBox, form, filterRow, scrollPane);
+        getChildren().add(scrollPane);
         refresh();
     }
 
@@ -78,6 +85,40 @@ public class BudgetView extends VBox{
         form.setPadding(new Insets(12));
         form.getStyleClass().add("card");
         return form;
+    }
+
+    private void refreshChart(){
+        chartBox.getChildren().clear();
+
+        Label title = new Label("Spending by Category");
+        title.getStyleClass().add("card-title");
+        chartBox.getChildren().add(title);
+
+        List<Transaction> expenses = transactionDAO.getAll().stream().filter(t -> !t.isIncome()).toList();
+
+        if (expenses.isEmpty()){
+            Label empty = new Label("No expenses yet to chart.");
+            empty.getStyleClass().add("text-muted");
+            chartBox.getChildren().add(empty);
+            return;
+        }
+
+        var byCategory = expenses.stream().collect(java.util.stream.Collectors.groupingBy(
+                t -> t.getCategory() != null && !t.getCategory().isBlank() ? t.getCategory() : "Uncategorized",
+                java.util.stream.Collectors.summingDouble(Transaction::getAmount)
+        ));
+
+        PieChart chart = new PieChart();
+        byCategory.forEach((category, total) ->
+            chart.getData().add(new PieChart.Data(category + " ($" + String.format("%.2f", total) + ")", total))
+    );
+    chart.setLegendVisible(true);
+    chart.setLabelsVisible(false);
+    chart.setPrefHeight(300);
+    chart.getStyleClass().add("budget-chart");
+
+    chartBox.getChildren().add(chart);
+
     }
 
     private HBox buildFilterRow(){
@@ -129,6 +170,7 @@ public class BudgetView extends VBox{
 
     private void refresh(){
         refreshSummary();
+        refreshChart();
         refreshList();
     }
 
