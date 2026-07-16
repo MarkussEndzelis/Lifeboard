@@ -15,10 +15,13 @@ import javafx.stage.FileChooser;
 import javafx.stage.Window;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
+
 
 public class JournalView extends VBox {
     
@@ -118,12 +121,64 @@ public class JournalView extends VBox {
         Label label = new Label("Past Entries");
         label.getStyleClass().add("card-title");
 
+        Button exportBtn = new Button("Export All");
+        exportBtn.getStyleClass().add("button-icon");
+        exportBtn.setOnAction(e -> exportEntries(exportBtn));
+
         HBox spacer = new HBox();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        HBox row = new HBox(10, label, spacer, searchField);
+        HBox row = new HBox(10, label, spacer, exportBtn,  searchField);
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
+    }
+
+    private void exportEntries(Button anchor){
+        List<JournalEntry> entries = journalDAO.getAll();
+
+        if (entries.isEmpty()){
+            saveStatus.setText("Nothing to export yet");
+            return;
+        }
+
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Export Journal");
+        chooser.setInitialFileName("journal_export.txt");
+        chooser.getExtensionFilters().add(
+            new FileChooser.ExtensionFilter("Text file", "*.txt")  
+        );
+        Window window = anchor.getScene().getWindow();
+        File file = chooser.showSaveDialog(window);
+        if (file == null){
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("LifeBoard Journal Export\n");
+        sb.append("=========================\n\n");
+
+        for (JournalEntry entry : entries){
+            LocalDate date = LocalDate.parse(entry.getEntryDate());
+            String formattedDate = date.format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy", Locale.ENGLISH));
+
+            sb.append(formattedDate).append("\n");
+            if (entry.getMood() != null){
+                sb.append("Mood: ").append(entry.getMood()).append("\n");
+            }
+            sb.append(entry.getContent()).append("\n");
+            if (entry.getPhotoPath() != null){
+                sb.append("[Photo attached: ").append(entry.getPhotoPath()).append("]\n");
+            }
+            sb.append("\n-------------------------\n\n");
+        }
+
+        try (FileWriter writer = new FileWriter(file)){
+            writer.write(sb.toString());
+            saveStatus.setText("Exported");
+        }catch (IOException e){
+            e.printStackTrace();
+            saveStatus.setText("Export failed");
+        }
     }
 
     private void loadToday(){

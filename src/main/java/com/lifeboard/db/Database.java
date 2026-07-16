@@ -81,9 +81,9 @@ public class Database {
             stmt.execute(transactions);
             stmt.execute(journal);
             try{
-                stmt.execute("AFTER TABLE journal_entries ADD COLUMN photo_path TEXT");
+                stmt.execute("ALTER TABLE journal_entries ADD COLUMN photo_path TEXT");
             }catch (SQLException e){
-                
+
             }
         }catch(SQLException e){
             throw new RuntimeException("Failed to initialize database", e);
