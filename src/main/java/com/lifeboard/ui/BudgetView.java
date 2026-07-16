@@ -20,6 +20,8 @@ public class BudgetView extends VBox{
     private final TransactionDAO transactionDAO = new TransactionDAO();
     private final VBox transactionListBox = new VBox(8);
     private final VBox summaryBox = new VBox(4);
+    private final ComboBox<String> filterBox = new ComboBox<>();
+    private boolean updatingFilter = false;
 
     private final TextField descField = new TextField();
     private final TextField amountField = new TextField();
@@ -37,13 +39,14 @@ public class BudgetView extends VBox{
         summaryBox.getStyleClass().add("card");
 
         VBox form = buildForm();
+        HBox filterRow = buildFilterRow();
 
         ScrollPane scrollPane = new ScrollPane(transactionListBox);
         scrollPane.setFitToWidth(true);
         scrollPane.setStyle("-fx-background-color: transparent;");
         VBox.setVgrow(scrollPane, Priority.ALWAYS);
 
-        getChildren().addAll(header, summaryBox, form, scrollPane);
+        getChildren().addAll(header, summaryBox, form, filterRow, scrollPane);
         refresh();
     }
 
@@ -75,6 +78,23 @@ public class BudgetView extends VBox{
         form.setPadding(new Insets(12));
         form.getStyleClass().add("card");
         return form;
+    }
+
+    private HBox buildFilterRow(){
+        Label label = new Label("Filter:");
+        label.getStyleClass().add("text-muted");
+
+        filterBox.getItems().add("All");
+        filterBox.setValue("All");
+        filterBox.setOnAction(e -> {
+            if (!updatingFilter){
+                refresh();
+            }
+        });
+
+        HBox row = new HBox(8, label, filterBox);
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
     }
 
     private void addTransaction(){
@@ -149,10 +169,17 @@ public class BudgetView extends VBox{
 
     private void refreshList(){
         transactionListBox.getChildren().clear();
-        List<Transaction> transactions = transactionDAO.getAll();
+        List<Transaction> allTransactions = transactionDAO.getAll();
+
+        updateFilterOptions(allTransactions);
+
+        String selectedFilter = filterBox.getValue();
+        List<Transaction> transactions = selectedFilter == null || selectedFilter.equals("All")
+                ? allTransactions
+                : allTransactions.stream().filter(t -> selectedFilter.equals(t.getCategory())).toList();
 
         if (transactions.isEmpty()){
-            Label empty = new Label("No transactions yet - add one above!");
+            Label empty = new Label(allTransactions.isEmpty() ? "No transactions yet - add one above!" : "No transactions in this category.");
             empty.getStyleClass().add("text-muted");
             transactionListBox.getChildren().add(empty);
             return;
@@ -193,6 +220,29 @@ public class BudgetView extends VBox{
         row.setPadding(new Insets(10, 14, 10, 14));
         row.getStyleClass().add("row-card");
         return row;
+    }
+
+    private void updateFilterOptions(List<Transaction> allTransactions){
+        updatingFilter = true;
+
+        String current = filterBox.getValue();
+
+        var categories = allTransactions.stream()
+                .map(Transaction::getCategory)
+                .filter(c -> c != null && !c.isBlank())
+                .distinct()
+                .sorted()
+                .toList();
+
+        filterBox.getItems().setAll("All");
+        filterBox.getItems().addAll(categories);
+
+        if (current != null && filterBox.getItems().contains(current)){
+            filterBox.setValue(current);
+        }else{
+            filterBox.setValue("All");
+        }
+        updatingFilter = false;
     }
 
     private String formatMoney(double amount){

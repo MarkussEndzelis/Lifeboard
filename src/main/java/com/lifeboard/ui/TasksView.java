@@ -19,6 +19,8 @@ public class TasksView extends VBox {
     private final TaskDAO taskDAO = new TaskDAO();
     private final VBox taskListBox = new VBox(8);
     private int editingTaskId = -1;
+    private final ComboBox<String> filterBox = new ComboBox<>();
+    private boolean updatingFilter = false;
 
     private final TextField titleField = new TextField();
     private final TextField categoryField = new TextField();
@@ -32,13 +34,14 @@ public class TasksView extends VBox {
         header.getStyleClass().add("page-number");
 
         VBox form = buildForm();
+        HBox filterRow = buildFilterRow();
 
         ScrollPane scrollPane = new ScrollPane(taskListBox);
         scrollPane.setFitToWidth(true);
         scrollPane.setStyle("-fx-background-color: transparent;");
         VBox.setVgrow(scrollPane, Priority.ALWAYS);
 
-        getChildren().addAll(header, form, scrollPane);
+        getChildren().addAll(header, form, filterRow, scrollPane);
         refresh();
     }
 
@@ -65,6 +68,23 @@ public class TasksView extends VBox {
         form.setPadding(new Insets(12));
         form.getStyleClass().add("card");
         return form;
+    }
+
+    private HBox buildFilterRow(){
+        Label label = new Label("Filter:");
+        label.getStyleClass().add("text-muted");
+
+        filterBox.getItems().add("All");
+        filterBox.setValue("All");
+        filterBox.setOnAction(e -> {
+            if (!updatingFilter){
+                refresh();
+            }
+        });
+
+        HBox row = new HBox(8, label, filterBox);
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
     }
 
     private void addTask(){
@@ -97,10 +117,17 @@ public class TasksView extends VBox {
 
     private void refresh(){
         taskListBox.getChildren().clear();
-        List<Task> tasks = taskDAO.getAll();
+        List<Task> allTasks = taskDAO.getAll();
+
+        updateFilterOptions(allTasks);
+
+        String selectedFilter = filterBox.getValue();
+        List<Task> tasks = selectedFilter == null || selectedFilter.equals("All") 
+            ? allTasks 
+            : allTasks.stream().filter(t -> selectedFilter.equals(t.getCategory())).toList();
 
         if (tasks.isEmpty()){
-            Label empty = new Label("No tasks yet - add one above!");
+            Label empty = new Label(allTasks.isEmpty() ? "No tasks yet - add one above!" : "No tasks in this category.");
             empty.getStyleClass().add("text-muted");
             taskListBox.getChildren().add(empty);
             return;
@@ -205,6 +232,30 @@ public class TasksView extends VBox {
         row.setPadding(new Insets(10, 14, 10, 14));
         row.getStyleClass().add("row-card");
         return row;
+    }
+
+    private void updateFilterOptions(List<Task> allTasks){
+        updatingFilter = true;
+
+        String current = filterBox.getValue();
+
+        var categories = allTasks.stream()
+            .map(Task::getCategory)
+            .filter(c -> c != null && !c.isBlank())
+            .distinct()
+            .sorted()
+            .toList();
+
+        filterBox.getItems().setAll("All");
+        filterBox.getItems().addAll(categories);
+
+        if (current != null && filterBox.getItems().contains(current)){
+            filterBox.setValue(current);
+        }else{
+            filterBox.setValue("All");
+        }
+
+        updatingFilter = false;
     }
 
     private String priorityColor(int priority){
