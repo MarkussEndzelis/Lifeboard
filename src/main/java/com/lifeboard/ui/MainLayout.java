@@ -41,13 +41,15 @@ public class MainLayout extends BorderPane{
         Button tasksBtn = navButton("Tasks");
         Button habitsBtn = navButton("Habits");
         Button budgetBtn = navButton("Budget");
+        Button journalBtn = navButton("Journal");
 
         dashboardBtn.setOnAction(e -> showView(new DashboardView(), dashboardBtn));
         tasksBtn.setOnAction(e -> showView(new TasksView(), tasksBtn));
         habitsBtn.setOnAction(e -> showView(new HabitsView(), habitsBtn));
         budgetBtn.setOnAction(e -> showView(new BudgetView(), budgetBtn));
+        journalBtn.setOnAction(e -> showView(new JournalView(), journalBtn));
 
-        sidebar.getChildren().addAll(title, dashboardBtn, tasksBtn, habitsBtn, budgetBtn);
+        sidebar.getChildren().addAll(title, dashboardBtn, tasksBtn, habitsBtn, budgetBtn, journalBtn);
         return sidebar;
     }
 

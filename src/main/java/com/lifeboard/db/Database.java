@@ -63,12 +63,28 @@ public class Database {
                 )
                 """;
 
+        String journal = """
+                CREATE TABLE IF NOT EXISTS journal_entries (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    entry_date TEXT NOT NULL UNIQUE,
+                    content TEXT NOT NULL,
+                    mood TEXT,
+                    created_at TEXT NOT NULL
+                )
+                """;
+
         try (Statement stmt = getConnection().createStatement()){
             stmt.execute("PRAGMA foreign_keys = ON");
             stmt.execute(tasks);
             stmt.execute(habits);
             stmt.execute(habitLogs);
             stmt.execute(transactions);
+            stmt.execute(journal);
+            try{
+                stmt.execute("AFTER TABLE journal_entries ADD COLUMN photo_path TEXT");
+            }catch (SQLException e){
+                
+            }
         }catch(SQLException e){
             throw new RuntimeException("Failed to initialize database", e);
         }
