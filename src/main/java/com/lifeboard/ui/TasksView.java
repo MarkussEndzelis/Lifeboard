@@ -2,6 +2,7 @@ package com.lifeboard.ui;
 
 import com.lifeboard.dao.TaskDAO;
 import com.lifeboard.model.Task;
+import javafx.scene.layout.Region;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -159,11 +160,11 @@ public class TasksView extends VBox {
 
     private HBox buildEditRow(Task task){
         TextField editTitle = new TextField(task.getTitle());
-        editTitle.setPrefWidth(180);
+        editTitle.setPrefWidth(150);
 
         TextField editCategory = new TextField(task.getCategory() != null ? task.getCategory() : "");
         editCategory.setPromptText("Category");
-        editCategory.setPrefWidth(120);
+        editCategory.setPrefWidth(100);
 
         ComboBox<String> editPriority = new ComboBox<>();
         editPriority.getItems().addAll("High", "Medium", "Low");
@@ -175,6 +176,7 @@ public class TasksView extends VBox {
         }
 
         Button saveBtn = new Button("Save");
+        saveBtn.setMinWidth(Region.USE_PREF_SIZE);
         saveBtn.getStyleClass().add("button-primary");
         saveBtn.setOnAction(e -> {
             String newTitle = editTitle.getText().trim();
@@ -191,6 +193,7 @@ public class TasksView extends VBox {
         });
 
         Button cancelBtn = new Button("Cancel");
+        cancelBtn.setMinWidth(Region.USE_PREF_SIZE);
         cancelBtn.getStyleClass().add("button-secondary");
         cancelBtn.setOnAction(e -> {
             editingTaskId = -1;

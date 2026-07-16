@@ -2,6 +2,7 @@ package com.lifeboard.ui;
 
 import com.lifeboard.dao.TransactionDAO;
 import com.lifeboard.model.Transaction;
+import javafx.scene.layout.Region;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -58,10 +59,12 @@ public class BudgetView extends VBox{
 
         typeBox.getItems().addAll("Expense", "Income");
         typeBox.setValue("Expense");
+        typeBox.setMinWidth(Region.USE_PREF_SIZE);
 
         datePicker.setValue(LocalDate.now());
 
         Button addBtn = new Button("Add Transaction");
+        addBtn.setMinWidth(Region.USE_PREF_SIZE);
         addBtn.getStyleClass().add("button-primary");
         addBtn.setOnAction(e -> addTransaction());
 
