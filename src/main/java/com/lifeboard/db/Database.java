@@ -73,6 +73,25 @@ public class Database {
                 )
                 """;
 
+        String mealPlan = """
+                CREATE TABLE IF NOT EXISTS meal_plan (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    day_of_week TEXT NOT NULL,
+                    meal_type TEXT NOT NULL,
+                    meal_name TEXT,
+                    UNIQUE(day_of_week, meal_type)
+                )
+                """;
+        
+        String groceryItems = """
+                CREATE TABLE IF NOT EXISTS grocery_items (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    item TEXT NOT NULL,
+                    checked INTEGER DEFAULT 0,
+                    created_at TEXT NOT NULL
+                )
+                """;
+
         try (Statement stmt = getConnection().createStatement()){
             stmt.execute("PRAGMA foreign_keys = ON");
             stmt.execute(tasks);
