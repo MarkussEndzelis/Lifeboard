@@ -128,14 +128,14 @@ public class Database {
 
     private static void addGoalLinkColumns(Connection conn){
         String[] alters = {
-            "ALTER TABLE goals ADD COLUMN link-type TEXT DEFAULT 'MANUAL'",
+            "ALTER TABLE goals ADD COLUMN link_type TEXT DEFAULT 'MANUAL'",
             "ALTER TABLE goals ADD COLUMN linked_habit_id INTEGER"
         };
         for (String sql : alters){
             try (java.sql.Statement s = conn.createStatement()){
                 s.execute(sql);
             }catch (SQLException e){
-                
+
             }
         }
     }

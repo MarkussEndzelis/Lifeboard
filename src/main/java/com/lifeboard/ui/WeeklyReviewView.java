@@ -40,6 +40,13 @@ public class WeeklyReviewView extends VBox {
         Label range = new Label(weekStart + " - " + today);
         range.getStyleClass().add("text-muted");
 
+        javafx.scene.control.Button exportBtn = new javafx.scene.control.Button("Export as PDF");
+        exportBtn.getStyleClass().add("button-secondary");
+        exportBtn.setOnAction(e -> exportPdf());
+
+        HBox topRow = new HBox(12, range, exportBtn);
+        topRow.setAlignment(Pos.CENTER_LEFT);
+
         VBox content = new VBox(16);
         content.getChildren().addAll(
             buildTasksCard(),
@@ -55,7 +62,27 @@ public class WeeklyReviewView extends VBox {
         scrollPane.setStyle("-fx-background-color: transparent;");
         VBox.setVgrow(scrollPane, Priority.ALWAYS);
 
-        getChildren().addAll(header, range, scrollPane);
+        getChildren().addAll(header, topRow, scrollPane);
+    }
+
+    private void exportPdf(){
+        javafx.stage.FileChooser chooser = new javafx.stage.FileChooser();
+        chooser.setTitle("Export Weekly Review");
+        chooser.setInitialFileName("weekly-review-" + today + ".pdf");
+        chooser.getExtensionFilters().add(
+            new javafx.stage.FileChooser.ExtensionFilter("PDF files", "*.pdf"));
+
+        java.io.File file = chooser.showSaveDialog(getScene().getWindow());
+        if (file == null) return;
+
+        try{
+            new com.lifeboard.util.WeeklyReviewExporter().exportToFile(file, weekStart, today);
+        }catch(java.io.IOException ex){
+            ex.printStackTrace();
+            Label errorLabel = new Label("Export failed: " + ex.getMessage());
+            errorLabel.getStyleClass().add("text-warning");
+            getChildren().add(errorLabel);
+        }
     }
 
     private int overdueCount;
