@@ -69,6 +69,7 @@ public class MealPlannerView extends VBox{
         for (int row = 0; row < MEAL_TYPES.length; row++){
             Label mealTypeLabel = new Label(MEAL_TYPES[row]);
             mealTypeLabel.getStyleClass().add("text-muted");
+            mealTypeLabel.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
             mealGrid.add(mealTypeLabel, 0, row + 1);
         }
 

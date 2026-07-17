@@ -104,6 +104,8 @@ public class Database {
             }catch (SQLException e){
 
             }
+            stmt.execute(mealPlan);
+            stmt.execute(groceryItems);
         }catch(SQLException e){
             throw new RuntimeException("Failed to initialize database", e);
         }
