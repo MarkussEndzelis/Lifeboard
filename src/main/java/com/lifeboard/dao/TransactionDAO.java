@@ -76,6 +76,25 @@ public class TransactionDAO {
         return 0;
     }
 
+    public double getRangeTotal(String type, LocalDate from, LocalDate to){
+        String sql = "SELECT COALESCE(SUM(amount), 0) AS total FROM transactions WHERE type = ? AND transaction_date BETWEEN ? AND ?";
+
+        Connection conn = Database.getConnection();
+        try(PreparedStatement stmt = conn.prepareStatement(sql)){
+            stmt.setString(1, type);
+            stmt.setString(2, from.toString());
+            stmt.setString(3, to.toString());
+            try (ResultSet rs = stmt.executeQuery()){
+                if(rs.next()){
+                    return rs.getDouble("total");
+                }
+            }
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
     public double getAllTimeBalance(){
         String sql = "SELECT " + 
             "COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) - " +

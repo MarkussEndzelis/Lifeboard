@@ -120,8 +120,23 @@ public class Database {
             stmt.execute(mealPlan);
             stmt.execute(groceryItems);
             stmt.execute(goals);
+            addGoalLinkColumns(connection);
         }catch(SQLException e){
             throw new RuntimeException("Failed to initialize database", e);
+        }
+    }
+
+    private static void addGoalLinkColumns(Connection conn){
+        String[] alters = {
+            "ALTER TABLE goals ADD COLUMN link-type TEXT DEFAULT 'MANUAL'",
+            "ALTER TABLE goals ADD COLUMN linked_habit_id INTEGER"
+        };
+        for (String sql : alters){
+            try (java.sql.Statement s = conn.createStatement()){
+                s.execute(sql);
+            }catch (SQLException e){
+                
+            }
         }
     }
 }

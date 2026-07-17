@@ -1,7 +1,12 @@
 package com.lifeboard.ui;
 
 import com.lifeboard.dao.GoalDAO;
+import com.lifeboard.dao.HabitDAO;
+import com.lifeboard.dao.TransactionDAO;
 import com.lifeboard.model.Goal;
+import com.lifeboard.model.Habit;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -18,7 +23,11 @@ import java.util.List;
 public class GoalsView extends VBox {
     
     private final GoalDAO goalDAO = new GoalDAO();
+    private final HabitDAO habitDAO = new HabitDAO();
+    private final TransactionDAO transactionDAO = new TransactionDAO();
     private final VBox goalListBox = new VBox(10);
+    private final ChoiceBox<String> linkTypeBox = new ChoiceBox<>();
+    private final ComboBox<Habit> habitBox = new ComboBox<>();
 
     private final TextField titleField = new TextField();
     private final TextField targetField = new TextField();
@@ -54,15 +63,39 @@ public class GoalsView extends VBox {
 
         deadlinePicker.setPromptText("Deadline (optional)");
 
+        linkTypeBox.getItems().addAll("Manual", "Track Budget Balance", "Track Habit Streak");
+        linkTypeBox.setValue("Manual");
+
+        habitBox.setPromptText("Which habit?");
+        habitBox.setVisible(false);
+        habitBox.setManaged(false);
+
+        linkTypeBox.setOnAction(e -> {
+            boolean showHabit = "Track Habit Streak".equals(linkTypeBox.getValue());
+            habitBox.setVisible(showHabit);
+            habitBox.setManaged(showHabit);
+            if (showHabit){
+                habitBox.getItems().setAll(habitDAO.getAll());
+            }
+            if ("Track Budget Balance".equals(linkTypeBox.getValue())){
+                unitField.setText("$");
+            }else if (showHabit){
+                unitField.setText("days");
+            }
+        });
+
         Button addBtn = new Button("Add Goal");
         addBtn.setMinWidth(Region.USE_PREF_SIZE);
         addBtn.getStyleClass().add("button-primary");
         addBtn.setOnAction(e -> addGoal());
 
-        HBox row = new HBox(8, titleField, targetField, unitField, deadlinePicker, addBtn);
-        row.setAlignment(Pos.CENTER_LEFT);
+        HBox row1 = new HBox(8, titleField, targetField, unitField, deadlinePicker, addBtn);
+        row1.setAlignment(Pos.CENTER_LEFT);
 
-        VBox form = new VBox(row);
+        HBox row2 = new HBox(8, new Label("Link to:"), linkTypeBox, habitBox);
+        row2.setAlignment(Pos.CENTER_LEFT);
+
+        VBox form = new VBox(8, row1, row2);
         form.setPadding(new Insets(12));
         form.getStyleClass().add("card");
         return form;
@@ -86,17 +119,36 @@ public class GoalsView extends VBox {
         String unit = unitField.getText().trim();
         LocalDate deadline = deadlinePicker.getValue();
 
-        goalDAO.insert(title, target, unit.isEmpty() ? null : unit, deadline != null ? deadline.toString() : null);
+        String selectedLink = linkTypeBox.getValue();
+        String linkType = "MANUAL";
+        Integer linkedHabitId = null;
+
+        if ("Track Budget Balance".equals(selectedLink)){
+            linkType = "BUDGET";
+        }else if ("Track Habit Streak".equals(selectedLink)){
+            Habit selectedHabit = habitBox.getValue();
+            if (selectedHabit == null){
+                return;
+            }
+            linkType = "HABIT";
+            linkedHabitId = selectedHabit.getId();
+        }
+
+        goalDAO.insert(title, target, unit.isEmpty() ? null : unit, deadline != null ? deadline.toString() : null, linkType, linkedHabitId);
 
         titleField.clear();
         targetField.clear();
         unitField.clear();
         deadlinePicker.setValue(null);
+        linkTypeBox.setValue("Manual");
+        habitBox.setVisible(false);
+        habitBox.setManaged(false);
 
         refresh();
     }
 
     private void refresh(){
+        goalDAO.syncLinkedGoals(habitDAO, transactionDAO);
         goalListBox.getChildren().clear();
         List<Goal> goals = goalDAO.getAll();
 
@@ -162,7 +214,14 @@ public class GoalsView extends VBox {
             bottomInfo.getChildren().add(deadlineLabel);
         }
 
-        VBox card = new VBox(8, topRow, progressLabel, progressBar, updateRow, bottomInfo);
+        VBox card;
+        if (goal.isLinked()){
+            Label linkedBadge = new Label(goal.getLinkType().equals("BUDGET") ? "Synced with Budget" : "Synced with Habit");
+            linkedBadge.getStyleClass().add("text-muted");
+            card = new VBox(8, topRow, progressLabel, progressBar, linkedBadge, bottomInfo);
+        }else {
+            card = new VBox(8, topRow, progressLabel, progressBar, updateRow, bottomInfo);
+        }
         card.setPadding(new Insets(14));
         card.getStyleClass().add("card");
         return card;

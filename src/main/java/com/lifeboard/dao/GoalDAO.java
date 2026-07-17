@@ -30,7 +30,11 @@ public class GoalDAO {
     }
 
     public void insert(String title, double targetValue, String unit, String deadline){
-        String sql = "INSERT INTO goals (title, target_value, current_value, unit, deadline, completed, created_at) VALUES (?, ?, 0, ?, ?, 0, ?)";
+        insert(title, targetValue, unit, deadline, "MANUAL", null);
+    }
+
+    public void insert(String title, double targetValue, String unit, String deadline, String linkType, Integer linkedHabitId){
+        String sql = "INSERT INTO goals (title, target_value, current_value, unit, deadline, completed, created_at, link_type, linked_habit_id) VALUES (?, ?, 0, ?, ?, 0, ?, ?, ?)";
         Connection conn = Database.getConnection();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)){
@@ -39,6 +43,12 @@ public class GoalDAO {
             stmt.setString(3, unit);
             stmt.setString(4, deadline);
             stmt.setString(5, LocalDateTime.now().toString());
+            stmt.setString(6, linkType != null ? linkType : "MANUAL");
+            if (linkedHabitId != null){
+                stmt.setInt(7, linkedHabitId);
+            }else {
+                stmt.setNull(7, java.sql.Types.INTEGER);
+            }
             stmt.executeUpdate();
         }catch(SQLException e){
             e.printStackTrace();
@@ -83,7 +93,21 @@ public class GoalDAO {
         }
     }
 
+    public void syncLinkedGoals(HabitDAO habitDAO, TransactionDAO transactionDAO){
+        for (Goal goal : getAll()){
+            if ("BUDGET".equals(goal.getLinkType())){
+                double balance = transactionDAO.getAllTimeBalance();
+                updateProgress(goal.getId(), balance);
+            }else if ("HABIT".equals(goal.getLinkType()) && goal.getLinkedHabitId() != null){
+                int streak = habitDAO.getStreak(goal.getLinkedHabitId());
+                updateProgress(goal.getId(), streak);
+            }
+        }
+    }
+
     private Goal mapRow(ResultSet rs) throws SQLException {
+        int linkedHabitId = rs.getInt("linked_habit_id");
+        boolean linkedHabitIdWasNull = rs.wasNull();
         return new Goal(
             rs.getInt("id"),
             rs.getString("title"),
@@ -92,7 +116,9 @@ public class GoalDAO {
             rs.getString("unit"),
             rs.getString("deadline"),
             rs.getInt("completed") == 1,
-            rs.getString("created_at")    
+            rs.getString("created_at"),
+            rs.getString("link_type"),
+            linkedHabitIdWasNull ? null : linkedHabitId
         );
     }
 }

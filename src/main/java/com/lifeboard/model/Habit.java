@@ -15,4 +15,9 @@ public class Habit {
     public int getId(){return id;}
     public String getName(){return name;}
     public String getCreatedAt(){return createdAt;}
+
+    @Override
+    public String toString(){
+        return name;
+    }
 }
