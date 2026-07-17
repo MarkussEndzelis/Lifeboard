@@ -92,6 +92,19 @@ public class Database {
                 )
                 """;
 
+        String goals = """
+                CREATE TABLE IF NOT EXISTS goals (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    title TEXT NOT NULL,
+                    target_value REAL NOT NULL,
+                    current_value REAL DEFAULT 0,
+                    unit TEXT,
+                    deadline TEXT,
+                    completed INTEGER DEFAULT 0,
+                    created_at TEXT NOT NULL
+                )
+                """;
+
         try (Statement stmt = getConnection().createStatement()){
             stmt.execute("PRAGMA foreign_keys = ON");
             stmt.execute(tasks);
@@ -106,6 +119,7 @@ public class Database {
             }
             stmt.execute(mealPlan);
             stmt.execute(groceryItems);
+            stmt.execute(goals);
         }catch(SQLException e){
             throw new RuntimeException("Failed to initialize database", e);
         }
