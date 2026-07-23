@@ -17,3 +17,5 @@ Lifeboard is a personal life management windows playable app which tracks tasks,
 1. Download Lifeboard.zip from releases
 2. Extract the zip folder
 3. Run the .exe (application) file
+
+If Windows SmartScreen blocks it, click "More info" then "Run anyway".
