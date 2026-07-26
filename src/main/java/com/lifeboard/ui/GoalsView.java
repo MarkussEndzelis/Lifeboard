@@ -189,8 +189,10 @@ public class GoalsView extends VBox {
         topRow.setAlignment(Pos.CENTER_LEFT);
 
         String unit = goal.getUnit() != null ? goal.getUnit() : "";
-        Label progressLabel = new Label(formatValue(goal.getCurrentValue()) + unit + " / " + formatValue(goal.getTargetValue()) + unit);
-        progressLabel.getStyleClass().add("text-muted");
+        boolean overTarget = goal.getCurrentValue() >= goal.getTargetValue();
+        String progressText = overTarget ? "Goal reached! (" + formatValue(goal.getCurrentValue()) + unit + ")" : formatValue(goal.getCurrentValue()) + unit + " / " + formatValue(goal.getTargetValue()) + unit;
+        Label progressLabel = new Label(progressText);
+        progressLabel.getStyleClass().add(overTarget ? "success-text" : "text-muted"); 
 
         StackPane progressBar = buildProgressBar(goal.getProgressFraction());
 

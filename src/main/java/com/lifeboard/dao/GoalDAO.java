@@ -69,7 +69,7 @@ public class GoalDAO {
     }
 
     public void setCompleted(int id, boolean completed){
-        String sql = "UPDATE goals SET completed ? WHERE id = ?";
+        String sql = "UPDATE goals SET completed = ? WHERE id = ?";
         Connection conn = Database.getConnection();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)){
